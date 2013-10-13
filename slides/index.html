@@ -180,8 +180,8 @@
             <tr>
                 <td><ul>
                     <li>感覺還不錯</li>
-                    <li class="next">但我們不能只要求這樣（<del>不然就掰不下去了</del>）</li>
-                    <li class="next">Y 軸的標籤感覺很……科學<br >（<del>宅</del> / <del>老闆看不懂</del>）</li>
+                    <li class="next">但我們不能只要求這樣（<del>不然就沒什麼好講了</del>）</li>
+                    <li class="next">Y 軸的標籤感覺很……科學（<del>宅</del> / <del>老闆看不懂</del>）</li>
                     <li class="next">如果要顯示成<mark>標準指數</mark>表達方式的話？</li>
                 </ul></td>
                 <td><img src="r-fig/fig1.png" alt=""></td>                
@@ -258,12 +258,12 @@ g + scale_y_continuous(labels=dollar) # $12,345,678
     <section class='slide' id="guide-line"><div>
         <h2>心法 - 自製回傳 exp. 的 formatter</h2>
         <ul>
-            <li class="next">將輸入的 numeric vector 轉成科學記號的 character vector (5e+9) <br />
+            <li class="next">將輸入的 numeric vector (0.02) 轉成科學記號的 character vector (5e+9) <br />
             => <code>format(num_vec, scientific=TRUE)</code></li>
             <li class="next">用 regex 把字串 <code>5e+9</code> 取代成 <code>5%*%10^9</code> 的形式 <br />
             => <code>gsub('pattern', 'replacing', char_vec)</code></li>
             <li class="next">使用 <code>parse(text=char_vec)</code> 來把字串轉回 expression vector</li>
-            <li class="next">把以上動作包成函數，傳到 <code>scale_y_continuous(labels=my_formatter)</code></li>
+            <li class="next">把以上動作包成函數 <code>my_formatter()</code>，傳到 <code>scale_y_continuous(labels=my_formatter)</code></li>
         </ul>
     </div></section>
 
