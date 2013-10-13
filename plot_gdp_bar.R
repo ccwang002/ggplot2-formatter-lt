@@ -30,10 +30,11 @@ fancy_scientific_format <- function(l) {
 	# turn in to character string in scientific notation 
 	l <- format(l, scientific=TRUE) 
 	l <- gsub("0.0+e[+-]0+$", "0", l)  # use '0' instead '0 x 10^0'
-	# quote the part before the exponent to keep all the digits 
+	# quote the part before the exponential to keep all the digits 
 	l <- gsub("^(.*)e", "'\\1'e", l) 
 	l <- gsub("e[+]", "e", l)  # remove the extra '+'
-	l <- gsub("e", "%*%10^", l)   # turn the 'e+' into plotmath format 
+	l <- gsub("e", "%*%10^", l)   # turn the 'e+' into plotmath format
+	l
 }
 
 fancy_scientific <- function(l){
@@ -44,4 +45,14 @@ super_fancy_dollar <- function(l){
 	parse(text=gsub("^'", "'$", fancy_scientific_format(l)))
 }
 
-g + scale_y_continuous(labels=super_fancy_dollar)
+g + scale_y_continuous(labels=fancy_scientific)
+g + scale_y_continuous(breaks=c(0, 1e12, 1.3e12), labels=fancy_scientific)
+g + scale_y_continuous(labels=super_fancy_dollar) + theme_grey(20)
+
+#-----------------------------------------------------------------------------
+# For Development
+#-----------------------------------------------------------------------------
+test_formatter <- function(l){
+	print(mode(l))
+	print(l)
+}
