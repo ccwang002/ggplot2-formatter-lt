@@ -52,23 +52,23 @@
 			-->
 		<style>
 			#Cover h2 {
-				margin:60px 0 0;
+				margin:10px 0 240px;
 				color:#FFF;
 				text-align:center;
-				font-size:80px;
+				font-size:100px;
             }
             #Cover h3 {
-				margin:10px 0 0;
-				color:#DDD;
+				margin:-70px 0 0;
+				color:#FFF;
 				text-align:center;
 				font-size:40px;
 			}
 			#Cover p {
-				margin:10px 0 0;
+				margin:30px 0 0;
 				text-align:center;
 				color:#DDD;
-				font-size:30px;
-				}
+				font-size:40px;
+			}
             #Cover p a {
                 color:#DDD;
             }
@@ -89,7 +89,7 @@
     </div></section>
 
     <section class="slide cover" id='notused'><div>
-        <h2>只用過 <code>plot()</code>，<br />每次要畫圖的時候</h2>
+        <h2>只用過 <code>plot()</code><br />每次要畫圖的時候</h2>
         <img src="pictures/plug_face_unhappy.jpg" alt="">
         <p class="source">Alice Bartlett <a href="http://www.flickr.com/photos/alicebartlett/3746583699/" target="_blank">"Plug sockets"</a>, CC 2.0 BY-NC</p>
         <style>
@@ -208,19 +208,26 @@
                     <li class="next">但這樣要自定 breaks 和 labels，有點累</li>
                     <li class="next">能不能自動化這件事？</li>
                     <li class='next'>可以傳入一個函式</li>
-                    <li class="next"><code>labels=formatter_fun</code></li><D-r>                    
+                    <li class="next"><code>labels=formatter_fun</code></li>
+                    <li class='next'>稱為 formatter</li>
                 </ul></td>
                 <td><img src="r-fig/fig2.png" alt=""></td>                
             </tr>
         </table>
     </div></section>
     <section class='slide' id='formatter-fun'><div>
-        <h2>如何寫 Formatter</h2>
-        <p>吃進一個<code>vector</code>，回傳一個<code>vector</code>。使用時直接丟函數給 labels</p>
+        <h2>如何寫 formatter</h2>
+        <p>吃進一個<code>vector</code>，回傳一個<code>vector</code>。使用時直接 pass 這個函數</p>
         <pre><code>my_formatter <- function(l) {
     paste('parsed', l)
 }
 g + scale_y_continuous(labels=my_formatter)</code></pre>
+        <p>只要記住自己是一次處理全部的 labels，最後也要回傳全部的 labels </p>
+        <style>
+            #formatter-fun p {
+                margin: 0 0 20px;
+            }
+        </style>
     </div></section>
     <section class='slide shout'>
         <div><h2 style='font-size: 3em; line-height: 1.5em'>那要如何丟回一個 <br />expression vector？</h2></div>
@@ -233,7 +240,7 @@ g + scale_y_continuous(labels=comma) # 12,345,678
 g + scale_y_continuous(labels=dollar) # $12,345,678
         </code></pre>
     </div></section>
-    <section class="slide"><div>
+    <section class="slide" id="third-run"><div>
         <table>
             <tr>
                 <td>comma</td>
@@ -245,7 +252,88 @@ g + scale_y_continuous(labels=dollar) # $12,345,678
             </tr>
         </table>
     </div></section>
+    <section class='slide shout'><div>
+        <h2 style='font-size: 3em; line-height: 1.5em'>接下來都是黑魔法了…</h2>
+    </div></section>
+    <section class='slide' id="guide-line"><div>
+        <h2>心法 - 自製回傳 exp. 的 formatter</h2>
+        <ul>
+            <li class="next">將輸入的 numeric vector 轉成科學記號的 character vector (5e+9) <br />
+            => <code>format(num_vec, scientific=TRUE)</code></li>
+            <li class="next">用 regex 把字串 <code>5e+9</code> 取代成 <code>5%*%10^9</code> 的形式 <br />
+            => <code>gsub('pattern', 'replacing', char_vec)</code></li>
+            <li class="next">使用 <code>parse(text=char_vec)</code> 來把字串轉回 expression vector</li>
+            <li class="next">把以上動作包成函數，傳到 <code>scale_y_continuous(labels=my_formatter)</code></li>
+        </ul>
+    </div></section>
 
+    <section class='slide' id="sci-formatter"><div>
+    <p>很多 regex 所以猛醜。分兩個函式寫可以增加更多控制</p>
+    <pre><code>fancy_scientific_format <- function(l) { 
+	# turn in to character string in scientific notation 
+	l <- format(l, scientific=TRUE) 
+	l <- gsub("0.0+e[+-]0+$", "0", l)  # use '0' instead '0 x 10^0'
+	# quote the part before the exponential to keep all the digits 
+	l <- gsub("^(.*)e", "'\\1'e", l) 
+	l <- gsub("e[+]", "e", l)  # remove the extra '+'
+    l <- gsub("e", "%*%10^", l)   # turn the 'e+' into plotmath format 
+    l
+}
+fancy_scientific <- function(l){
+    # return as an expression vector
+	parse(text=fancy_scientific_format(l)) 
+}</code></pre>
+    <style>
+        #sci-formatter p {
+            margin: 0 0 10px;
+        }
+        #sci-formatter pre code {
+            font-size: 0.8em;
+            line-height: 1.6em;
+        }    
+    </style>
+    </div></section>
+    <section class="slide" id="forth-run"><div>
+        <table>
+            <tr>
+                <td>default breaks</td>
+                <td><code>breaks<-c(0, 1e12, 1.3e12)</code></td>
+            </tr>
+            <tr>
+                <td><img src="r-fig/fig4.png"></td>
+                <td><img src="r-fig/fig4_breaks.png"></td>
+            </tr>
+        </table>
+    </div></section>
+    <section class='slide' id="super-fancy"><div>
+    <p>如果要多加個「$」號，只要再用 <code>gsub()</code> 繼續接 <code>fancy_scientific_format()</code> 即可</p>
+    <pre class='language-r'>
+        <code>super_fancy_dollar <- function(l){</code>
+        <code>  parse(text=gsub(</code>
+        <code>    "^'", "'$", fancy_scientific_format(l)</code>
+        <code>  ))</code>
+        <code>}</code>        
+    </pre>
+    </div></section>
+    <section class="slide slide-code" id="fifth-run"><div>
+        <h2>終於… <a href="https://github.com/ccwang002/ggplot2-formatter-lt/blob/master/plot_gdp_bar.R">(full code here)</a></h2>
+        <p style='text-align: center'><img src="r-fig/fig5.png"></p>
+    </div></section>
+    <section class="slide shout cover" id="end">
+        <div><h2>THE END</h2>
+        <img src="pictures/end_cover.jpg" alt="">
+    </div>
+    <style>
+        #end h2 {
+            position: absolute;
+            top: 75%;
+            text-align: right;
+            margin: 0 -40px;
+            color: #333;
+            opacity: 0.5;
+        }
+    </style>
+    </section>
 <!-- END OF THE SLIDE CONTENT -->
 	<p class="badge"><a href="https://github.com/ccwang002">Fork me on Github</a></p>
 	<!--
@@ -259,7 +347,7 @@ g + scale_y_continuous(labels=dollar) # $12,345,678
 $(document).ready(function() {
     $('pre code').each(function(i, e) {hljs.highlightBlock(e)});
 });
-    </script>     
+    </script>
     <script src="shower/shower.min.js"></script>
     <script>
       (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
