@@ -1,3 +1,6 @@
+#-----------------------------------------------------------------------------
+# Initial Setup
+#-----------------------------------------------------------------------------
 source('data_wrangling.R')
 library(ggplot2)
 
@@ -5,9 +8,22 @@ g <- ggplot(df, aes(x=Country.Code, y=Y2012)) +
 	geom_bar(stat='identity', alpha=.9) + 
 	xlim(df$Country.Code)
 
-library(scales)
-g + scale_y_continuous(labels=dollar)
+#-----------------------------------------------------------------------------
+# Manual Setting Both `breaks` and `labels`
+#-----------------------------------------------------------------------------
+breaks <- c(0, seq(from=5e11, to=1.5e12, by=5e11))
+labels <- c('0', expression(5%*%10^11), expression(1.0%*%10^12), expression(1.5%*%10^12))
+g + scale_y_continuous(breaks=breaks, labels=labels) + theme_grey(20)
 
+#-----------------------------------------------------------------------------
+# Examples Using scales
+#-----------------------------------------------------------------------------
+library(scales)
+g + scale_y_continuous(labels=dollar) + theme_grey(20)
+
+#-----------------------------------------------------------------------------
+# Advanced Formatter
+#-----------------------------------------------------------------------------
 fancy_scientific_format <- function(l) { 
 	# This function is adapted from Brian Diggs's solution
 	# https://groups.google.com/d/msg/ggplot2/a_xhMoQyxZ4/OQHLPGsRtAQJ
@@ -23,7 +39,7 @@ fancy_scientific_format <- function(l) {
 fancy_scientific <- function(l){
 	parse(text=fancy_scientific_format(l))   # return this as an expression 
 }
-
+ 
 super_fancy_dollar <- function(l){
 	parse(text=gsub("^'", "'$", fancy_scientific_format(l)))
 }
