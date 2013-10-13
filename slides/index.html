@@ -1,0 +1,175 @@
+<!DOCTYPE HTML>
+<html lang="en">
+<head>
+	<title>ggplot2 X Formatter LT, 2013.10.13</title>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=792, user-scalable=no">
+	<meta http-equiv="x-ua-compatible" content="ie=edge">
+    <link rel="stylesheet" href="shower/themes/ribbon/styles/screen.css">
+    <link rel="stylesheet" href="lib/highlight.js/styles/tomorrow.css" type="text/css"/>
+    <style type="text/css" media="all">
+        section.slide.slide-code h2 a {
+            font-size: 0.5em;
+        }
+        section.slide.slide-code pre {
+            margin: 0 0 0 20px;
+        }
+        section.slide p.source {
+            color: #000;
+            position: absolute;
+            bottom: 10px;
+            right: 10px;
+            text-align: right;
+            font-size: 0.8em;
+            margin: 0px;
+        }   
+        section.slide p.source a {
+            color: #000;
+        }
+    </style>
+</head>
+<body class="list">
+    <header class="caption">
+        <h1>Lightning Talk @Taiwan R User Group<h1>
+		<h1>ggplot2 X Formatter, 2013.10.13</h1>
+		<p>Liang Bo Wang</p>
+	</header>
+	<section class="slide cover" id="Cover"><div>
+        <h3>Taiwan R User Group Anniversary</h3>
+        <h2>ggplot2 X Formatter<h2>
+        <p>2013.10.13<p>
+		<p><a href="http://about.me/lbwang">Liang Bo Wang</a> (亮亮)</p>
+		<img src="pictures/cover.jpg" alt="">
+		<!--
+			To apply styles to the certain slides
+			set slide ID to get needed elements
+			-->
+		<style>
+			#Cover h2 {
+				margin:60px 0 0;
+				color:#FFF;
+				text-align:center;
+				font-size:80px;
+            }
+            #Cover h3 {
+				margin:10px 0 0;
+				color:#DDD;
+				text-align:center;
+				font-size:40px;
+			}
+			#Cover p {
+				margin:10px 0 0;
+				text-align:center;
+				color:#DDD;
+				font-style:italic;
+				font-size:30px;
+				}
+            #Cover p a {
+                color:#DDD;
+            }
+		</style>
+    </div></section>
+        <section class="slide cover shout" id='plugface'><div>
+        <h2>哪泥！沒聽過 ggplot2？！</h2>
+        <img src="pictures/plug_face_1.jpg" alt="">
+        <p class="source">Jake Mates <a href="http://www.flickr.com/photos/jakematesdesign/3165600114/" target="_blank">"Plug Face - Day 3/365"</a>, CC 2.0 BY-NC-SA</p>
+        <style>
+            #plugface h2 {
+                color: #FFF;
+            }
+            #plugface img {
+                opacity: 0.8;
+            }
+        </style>
+    </div></section>
+
+    <section class="slide cover" id='notused'><div>
+        <h2>只用過 <code>plot()</code></h2>
+        <img src="pictures/plug_face_unhappy.jpg" alt="">
+        <p class="source">Alice Bartlett <a href="http://www.flickr.com/photos/alicebartlett/3746583699/" target="_blank">"Plug sockets"</a>, CC 2.0 BY-NC</p>
+        <style>
+            #notused h2 {
+                color: #FFF;
+                position: absolute;
+                top: 300px;
+                right: 16<D-r>0px;
+                font-size: 2.5em;
+            }
+            #notused img {
+                opacity: 0.8;
+            }
+        </style>
+    </div></section>
+
+    <section class="slide cover" id='used'><div>
+        <h2>用過 <code>ggplot2</code> 後</h2>
+        <img src="pictures/plug_face_happy.jpg" alt="">
+        <p class="next link">更多……請參考小弟寫的<a href="http://ccwang002.github.io/ggplot2-tutorial/" target="_blank">教學</a></p>
+        <p class="source">Martin Börjesson <a href="http://www.flickr.com/photos/martin_borjesson/3704268639/" target="_blank">"Electric plug face"</a>, CC 2.0 BY-NC</p>
+        <style>
+            #used h2 {
+                color: #FFF;
+                position: absolute;
+                top: 100px;
+                left: 50px;
+                font-size: 3.5em;
+            }
+            #used img {
+                opacity: 0.8;
+            }
+            #used p.link {
+                position: absolute;
+                right: 20px;
+                bottom: 50px;
+                color: #FFF;
+                font-size: 2em;
+                margin: 0px;
+            }
+        </style>
+    </div></section>
+
+    <section class="slide" id='data-set'><div>
+        <h2>使用 GDP (PPP) From World Bank</h2>
+        <ul>
+            <li>從 <a href='http://en.wikipedia.org/wiki/List_of_countries_by_GDP_(PPP)' target='_blank'>Wikipedia</a> 找到的</li>
+            <li>做到一半……才發現沒有臺灣資料 @@
+                <ul><li><del>只好自己偷偷加 XD</del></li>
+                <li>數據有很大的誤差，僅供畫圖 Demo 用</li></ul>
+            </li>
+            <li><a href="http://data.worldbank.org/indicator/NY.GDP.MKTP.PP.CD/countries/order%3Dwbapi_data_value_2012%20wbapi_data_value%20wbapi_data_value-last?order=wbapi_data_value_2012%20wbapi_data_value%20wbapi_data_value-last&sort=desc&display=default" target="_blank">World Bank 網站</a>做得蠻好看的</li>
+            <li>把提供的 CSV 檔下載下來</li>
+        </ul>
+    </div></section>
+    <section class="slide slide-code" id='read-csv'><div>
+        <h2>Read in CSV <a href="git">(code here)</a></h2>
+        <pre class='language-r'>
+            <code>CSV_PATH <- 'path/to/worldbank.csv' </code>
+            <code>df <- read.csv(CSV_PATH, <mark>stringsAsFactors=FALSE</mark>) </code>
+<code class='no-linenumber'><mark class='important'>錯誤在read.table(...) : more columns than column names</mark></code></pre>
+        <p>結果不如預期……原來 csv 前面多了兩行 => 多加上 <code>skip=2</code>
+        <pre><code class='language-shell' style='font-size: 0.8em; line-height:1.5em; margin-top: 20px'>$ head your.csv
+"Data Source","World Development Indicators",
+
+"Country Name","Country Code", ...</code></pre>
+        </p>
+        <style>
+            #read-csv p {
+                margin: 10px 0 0;
+            }
+        </style>
+    </div></section>
+	<p class="badge"><a href="https://github.com/ccwang002">Fork me on Github</a></p>
+	<!--
+		To hide progress bar from entire presentation
+		just remove “progress” element.
+		-->
+    <div class="progress"><div></div></div>
+    <script src="http://code.jquery.com/jquery-1.10.1.min.js"></script>        
+    <script src="lib/highlight.js/highlight.pack.js" type="text/javascript" charset="utf-8"></script> 
+    <script>
+$(document).ready(function() {
+    $('pre code').each(function(i, e) {hljs.highlightBlock(e)});
+});
+    </script>     
+    <script src="shower/shower.min.js"></script>
+</html>
