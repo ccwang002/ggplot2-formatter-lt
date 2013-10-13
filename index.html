@@ -26,6 +26,12 @@
         section.slide p.source a {
             color: #000;
         }
+        table.clean td img {
+            vertical-align: top;
+        }
+        table.clean td {
+            background: none;
+        }
     </style>
 </head>
 <body class="list">
@@ -37,8 +43,8 @@
 	<section class="slide cover" id="Cover"><div>
         <h3>Taiwan R User Group Anniversary</h3>
         <h2>ggplot2 X Formatter<h2>
-        <p>2013.10.13<p>
-		<p><a href="http://about.me/lbwang">Liang Bo Wang</a> (亮亮)</p>
+        <p><a href="http://about.me/lbwang">Liang Bo Wang</a> (亮亮), 2013.10.13</p>
+        <p>Shared under MIT / CC 3.0 BY License</p>
 		<img src="pictures/cover.jpg" alt="">
 		<!--
 			To apply styles to the certain slides
@@ -61,7 +67,6 @@
 				margin:10px 0 0;
 				text-align:center;
 				color:#DDD;
-				font-style:italic;
 				font-size:30px;
 				}
             #Cover p a {
@@ -84,16 +89,17 @@
     </div></section>
 
     <section class="slide cover" id='notused'><div>
-        <h2>只用過 <code>plot()</code></h2>
+        <h2>只用過 <code>plot()</code>，<br />每次要畫圖的時候</h2>
         <img src="pictures/plug_face_unhappy.jpg" alt="">
         <p class="source">Alice Bartlett <a href="http://www.flickr.com/photos/alicebartlett/3746583699/" target="_blank">"Plug sockets"</a>, CC 2.0 BY-NC</p>
         <style>
             #notused h2 {
                 color: #FFF;
                 position: absolute;
-                top: 300px;
-                right: 16<D-r>0px;
+                top: 250px;
+                left: 400px;
                 font-size: 2.5em;
+                line-height: 1.5em;
             }
             #notused img {
                 opacity: 0.8;
@@ -141,7 +147,7 @@
         </ul>
     </div></section>
     <section class="slide slide-code" id='read-csv'><div>
-        <h2>Read in CSV <a href="git">(code here)</a></h2>
+        <h2>Read in CSV <a href="https://github.com/ccwang002/ggplot2-formatter-lt/blob/master/data_wrangling.R">(code here)</a></h2>
         <pre class='language-r'>
             <code>CSV_PATH <- 'path/to/worldbank.csv' </code>
             <code>df <- read.csv(CSV_PATH, <mark>stringsAsFactors=FALSE</mark>) </code>
@@ -158,6 +164,89 @@
             }
         </style>
     </div></section>
+    <section class='slide'><div>
+        <h2>各國 GDP 長條圖</h2>
+        <p>這邊只取了 5 國來畫，並且依照 GDP 高低來排序</p>
+        <pre class='language-r'>
+            <code>library(ggplot2)</code> 
+            <code>g <- ggplot(df, aes(x=Country.Code, y=Y2012)) + </code>
+            <code>  geom_bar(stat='identity', alpha=.9) + </code>
+            <code>  xlim(df$Country.Code)</code>
+        </pre>
+    </div></section>
+    <section class='slide' id='first-run'><div>
+        <h2>初步結果</h2>
+        <table class='clean'>
+            <tr>
+                <td><ul>
+                    <li>感覺還不錯</li>
+                    <li class="next">但我們不能只要求這樣（<del>不然就掰不下去了</del>）</li>
+                    <li class="next">Y 軸的標籤感覺很……科學<br >（<del>宅</del> / <del>老闆看不懂</del>）</li>
+                    <li class="next">如果要顯示成<mark>標準指數</mark>表達方式的話？</li>
+                </ul></td>
+                <td><img src="r-fig/fig1.png" alt=""></td>                
+            </tr>
+        </table>
+    </div></section>
+    <section class='slide'><div>
+        <h2>簡單 Google 後</h2>
+        <p>可以用 <code>expression()</code> 來表達</p>
+        <pre class='language-r'>
+            <code>breaks <- c(0, seq(from=5e11, to=1.5e12, by=5e11)) </code>
+            <code>labels <- c('0', expression(5%*%10^11), </code>
+            <code>            expression(1.0%*%10^12),</code>
+            <code>            expression(1.5%*%10^12))</code>
+            <code>g + scale_y_continuous(breaks=breaks, labels=labels)</code>
+        </pre>
+    </div></section>
+    <section class='slide' id='second-run'><div>
+        <h2>手動定 label</h2>
+        <table class='clean'>
+            <tr>
+                <td><ul>
+                    <li>感覺還不錯</li>
+                    <li class="next">但這樣要自定 breaks 和 labels，有點累</li>
+                    <li class="next">能不能自動化這件事？</li>
+                    <li class='next'>可以傳入一個函式</li>
+                    <li class="next"><code>labels=formatter_fun</code></li><D-r>                    
+                </ul></td>
+                <td><img src="r-fig/fig2.png" alt=""></td>                
+            </tr>
+        </table>
+    </div></section>
+    <section class='slide' id='formatter-fun'><div>
+        <h2>如何寫 Formatter</h2>
+        <p>吃進一個<code>vector</code>，回傳一個<code>vector</code>。使用時直接丟函數給 labels</p>
+        <pre><code>my_formatter <- function(l) {
+    paste('parsed', l)
+}
+g + scale_y_continuous(labels=my_formatter)</code></pre>
+    </div></section>
+    <section class='slide shout'>
+        <div><h2 style='font-size: 3em; line-height: 1.5em'>那要如何丟回一個 <br />expression vector？</h2></div>
+    </section>
+    <section class="slide"><div>
+        <h2>在這之前，先介紹套件 <a href="http://cran.r-project.org/web/packages/scales/index.html" target="_blank">scales</a></h2>
+        <p>定義好很多 formatter，用法相同</p>
+        <pre><code>library(scales)
+g + scale_y_continuous(labels=comma) # 12,345,678
+g + scale_y_continuous(labels=dollar) # $12,345,678
+        </code></pre>
+    </div></section>
+    <section class="slide"><div>
+        <table>
+            <tr>
+                <td>comma</td>
+                <td>dollar</td>
+            </tr>
+            <tr>
+                <td><img src="r-fig/fig3_comma.png"></td>
+                <td><img src="r-fig/fig3_dollar.png"></td>
+            </tr>
+        </table>
+    </div></section>
+
+<!-- END OF THE SLIDE CONTENT -->
 	<p class="badge"><a href="https://github.com/ccwang002">Fork me on Github</a></p>
 	<!--
 		To hide progress bar from entire presentation
@@ -173,13 +262,12 @@ $(document).ready(function() {
     </script>     
     <script src="shower/shower.min.js"></script>
     <script>
-  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
-  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
-  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
-  })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+      (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+      (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+      m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+      })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
 
-  ga('create', 'UA-42219381-2', 'ccwang002.github.io');
-  ga('send', 'pageview');
-
-</script>
+      ga('create', 'UA-42219381-2', 'ccwang002.github.io');
+      ga('send', 'pageview');
+    </script>
 </html>
